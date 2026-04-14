@@ -5,27 +5,20 @@ const app = express();
 app.get('/quote/:symbol', async (req, res) => {
   const symbol = req.params.symbol.toUpperCase();
   try {
-    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=d6ph631r01qo88aj695gd6ph631r01qo88aj6960`);
+    const key = process.env.FINNHUB_KEY;
+    const url = 'https://finnhub.io/api/v1/quote?symbol=' + symbol + '&token=' + key;
+    const response = await fetch(url);
     const data = await response.json();
     if (data && data.c > 0) {
-      res.json({ symbol, price: data.c, pc: data.pc, open: data.o, high: data.h, low: data.l });
+      res.json({ symbol: symbol, price: data.c, pc: data.pc, open: data.o, high: data.h, low: data.l });
     } else {
-      res.status(404).json({ error: 'No data' });
+      res.status(404).json({ error: 'No price data', symbol: symbol });
     }
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch' });
+    res.status(500).json({ error: err.message });
   }
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 app.listen(process.env.PORT || 3000, () => console.log('Server running'));
-```
-
-Then:
-- Press **Ctrl+X**
-- Press **Y**  
-- Press **Enter**
-
-Then run:
-```
-node server.js
